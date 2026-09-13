@@ -1,0 +1,16 @@
+{
+  "name": "home-automation-backend",
+  "version": "1.0.0",
+  "description": "Vercel Frontend & Serverless Backend for Home Automation",
+  "main": "api/smarthome.js",
+  "scripts": {
+    "start": "echo 'Run locally using Vercel CLI'"
+  },
+  "dependencies": {
+    "actions-on-google": "^3.0.0",
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

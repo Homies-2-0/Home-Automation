@@ -1,0 +1,716 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>Home 2.0 - Precision ESP32 IoT Controller</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#0055c7",
+        "primary-container": "#256eec",
+        secondary: "#10b981",
+        "secondary-container": "#059669",
+        tertiary: "#f59e0b",
+        "outline-variant": "#334155",
+        surface: "#070B14",
+        "on-surface": "#f8fafc",
+        "on-surface-variant": "#94a3b8",
+        error: "#ef4444"
+      },
+      fontFamily: {
+        sans: ["Poppins", "Inter", "sans-serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+      }
+    }
+  }
+};
+</script>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-white transition-colors duration-300">
+<!-- GLOBAL FIXED HEADER -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-xl border-b shadow-sm theme-nav transition-colors duration-300">
+<div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3.5">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/25 to-primary/5 border border-primary/40 shadow-md">
+<img alt="Logo Avatar" class="w-9 h-9 rounded-full object-cover border border-slate-700/60 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq_Ce48_VwauNLz_-_uuXbukUF_1Dza58D-UVhBGabtNM98dGnrjmxOD5oRfL7nUQ4YPyqoLb8_U518SBBr9_dsHZpSA0Eof_IBDZDgN3SFFX24e0sLl6JCn34KLK5y-PA1X0igXj45j7h4h9WOlwFFJKLmv-Jcl8t2GGLuSQ3ob07-zOaSIAmsohjSz8bR76j2hWkG2re-5y9FLT8JmSqq9z-D2NA2vRV4GkNbPTzBbJTZkRSxrXed9w9ZX8KlYOgUvOg_QV36qguUJA">
+<span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900 dark:border-slate-900"></span>
+</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+
+<!-- REAL-TIME DYNAMIC GREETING & STATUS BEACON -->
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+<span class="material-symbols-outlined text-[13px] text-amber-500" id="greeting-icon">bedtime</span>
+<span id="dynamic-greeting-text" class="">Good night</span>
+<span class="opacity-40">•</span>
+<span class="font-mono text-[10px] tracking-tight" id="live-clock-text">1:08 AM</span>
+</div>
+<span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider text-emerald-500 dark:text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>ESP32 Core Live
+</span>
+</div>
+
+</div>
+</div>
+<!-- Header Telemetry and Master Status Pill -->
+<div class="flex items-center gap-2 sm:gap-3">
+<!-- Master Lock Indicator Pill in Header -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400 transition-all" id="header-lock-badge">
+<span class="material-symbols-outlined text-[17px]" id="header-lock-icon">lock_open</span>
+<span class="text-xs font-semibold hidden md:inline" id="header-lock-text">SYSTEM UNLOCKED</span>
+</div>
+<div class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl theme-subcard border">
+<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-[16px]">power</span>
+<span class="text-xs theme-text-strong font-semibold" id="header-active-count">2 / 3 Active</span>
+</div>
+<!-- Quick Sync Button -->
+<button class="w-10 h-10 rounded-xl theme-subcard border flex items-center justify-center theme-text-muted hover:text-primary transition-all active:scale-95 cursor-pointer" id="btn-quick-sync" title="Quick Sync Controller" type="button">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-500" id="sync-icon">sync</span>
+</button>
+<!-- Theme Switcher (Dark / Warm Light Mode Toggle) -->
+<button class="w-10 h-10 rounded-xl theme-subcard border flex items-center justify-center theme-text-muted hover:text-amber-500 transition-all active:scale-95 cursor-pointer shadow-sm" id="btn-theme-toggle" title="Toggle Light / Dark Theme" type="button">
+<span class="material-symbols-outlined text-[20px] text-amber-500" id="theme-icon">light_mode</span>
+</button>
+<!-- Device Configuration Modal Button -->
+<button class="w-10 h-10 rounded-xl theme-subcard border flex items-center justify-center theme-text-muted hover:text-primary transition-all active:scale-95 cursor-pointer" id="btn-open-settings" title="Hardware Channel Settings" type="button">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+<div class="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xs shadow-md shadow-primary/30">
+  ESP
+</div>
+</div>
+</div>
+<!-- Realtime Controller Bar -->
+<div class="w-full theme-bar border-t px-4 sm:px-6 transition-colors duration-300">
+<div class="max-w-7xl mx-auto py-1.5 flex items-center justify-between text-xs theme-text-muted">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+  Hardware Synchronized
+</span>
+<span class="hidden sm:inline">RTT: <strong class="theme-text-strong font-mono" id="telemetry-ping">16ms</strong></span>
+<span class="hidden sm:inline">RSSI: <strong class="theme-text-strong font-mono">-52 dBm</strong></span>
+</div>
+<div class="flex items-center gap-4 font-medium">
+<span class="">Dual-Switch Interlock: <strong class="text-emerald-500 dark:text-emerald-400" id="banner-sync-status">Active</strong></span>
+<span class="hidden md:inline">UART: <strong class="theme-text-strong font-mono">115200 Baud</strong></span>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN APP CONTAINER -->
+<main class="w-full pt-28 pb-16 min-h-screen">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col gap-6" id="dashboard-controls">
+<!-- MASTER LOCK SAFETY WARNING BANNER (Shown when Locked) -->
+<div class="rounded-2xl p-4 bg-amber-500/15 border border-amber-500/40 text-amber-500 dark:text-amber-400 flex items-center justify-between gap-4 transition-all animate-pulse hidden" id="master-lockout-banner">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400 shrink-0">
+<span class="material-symbols-outlined text-[24px]">lock</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-amber-600 dark:text-amber-300">MASTER LOCK ENGAGED — SYSTEM SAFETY LOCKED</h4>
+<p class="text-xs text-amber-600/90 dark:text-amber-400/80">All individual device toggles, bulk actions, and automation timers are protected against accidental clicks. Click the circular Master Lock button to disarm/unlock controls.</p>
+</div>
+</div>
+<button class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wider uppercase transition-all shadow-md active:scale-95 shrink-0 cursor-pointer" id="btn-banner-unlock" type="button">
+  Disarm Master Lock
+</button>
+</div>
+<!-- MASTER POWER / AUTHORITY SECTION -->
+<div class="relative overflow-hidden rounded-3xl theme-card p-6 sm:p-8 border shadow-2xl transition-all duration-300">
+<div class="absolute -top-32 -right-32 w-88 h-88 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-28 -left-24 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+<!-- Left details & Bulk Switch Controls -->
+<div class="flex flex-col gap-3 max-w-2xl">
+<div class="flex items-center gap-2.5">
+<span class="px-2.5 py-1 rounded-md bg-primary/15 border border-primary/30 text-primary dark:text-blue-400 font-bold text-[11px] uppercase tracking-widest">
+  Master Power Matrix
+</span>
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-500 dark:text-emerald-400" id="master-load-badge">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="master-load-indicator-dot"></span>
+<span id="master-load-text" class="">2 / 3 LOAD ACTIVE (88W)</span>
+</span>
+</div>
+<h1 class="text-2xl sm:text-3xl font-bold tracking-tight theme-text-strong">
+  Channel Overhead Authority
+</h1>
+<!-- PROMINENT ALL CHANNELS ON / ALL CHANNELS OFF BUTTONS -->
+<div class="flex flex-wrap items-center gap-4 pt-3 justify-center">
+<button class="relative group inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-500/25 active:scale-95 transition-all border border-amber-300/40 cursor-pointer" id="btn-all-on" type="button">
+<span class="material-symbols-outlined text-[26px] transition-transform group-hover:rotate-45" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+<div class="flex flex-col text-left">
+<span class="tracking-wide leading-tight">All Channels ON</span>
+<span class="text-[11px] opacity-80 font-normal">Activate all 3 Relays</span>
+</div>
+</button>
+<button class="relative group inline-flex items-center gap-3 px-7 py-4 rounded-2xl theme-subcard hover:opacity-90 theme-text-strong font-bold text-base shadow-lg border active:scale-95 transition-all cursor-pointer" id="btn-all-off" type="button">
+<span class="material-symbols-outlined text-[26px] theme-text-muted transition-transform group-hover:-rotate-12">dark_mode</span>
+<div class="flex flex-col text-left">
+<span class="tracking-wide leading-tight">All Channels OFF</span>
+<span class="text-[11px] theme-text-muted font-normal">Safe zero-draw standby</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Right Side: MASTER LOCK / LAST STATE LOCK AUTHORITY -->
+<div class="flex items-center self-center lg:self-auto theme-subcard p-6 rounded-3xl border shadow-inner">
+<div class="flex flex-col items-center gap-2.5 text-center">
+<!-- Oversized Circular Master Lock Trigger Button -->
+<button class="relative group w-28 h-28 rounded-full theme-subcard flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer" id="master-lock-trigger" title="Click to toggle Master Lock Authority" type="button">
+<!-- Glow ring indicator -->
+<span class="absolute inset-0 rounded-full border-4 border-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.55)] animate-ring-pulse transition-all" id="master-lock-ring"></span>
+<!-- Inner circle container -->
+<span class="absolute inset-2 rounded-full theme-card flex flex-col items-center justify-center transition-all duration-300 shadow-md">
+<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-[40px] group-hover:scale-110 transition-transform" id="master-lock-icon">lock_open</span>
+<span class="text-[9px] font-extrabold uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mt-0.5" id="master-lock-tiny-label">UNLOCKED</span>
+</span>
+</button>
+<!-- State text description -->
+<div class="flex flex-col items-center">
+<span class="text-xs font-bold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 transition-colors" id="master-system-status">MASTER LOCK ENGAGED (OPERATIONAL)</span>
+<span class="text-[11px] theme-text-muted" id="master-system-subtext">Dashboard &amp; Switches Fully Unlocked</span>
+</div>
+<!-- Quick Lock/Unlock Helper Button -->
+<button class="px-3 py-1 rounded-full theme-input text-[10px] font-bold theme-text-muted hover:theme-text-strong uppercase tracking-wider transition-colors cursor-pointer" id="btn-toggle-lock-text" type="button">Tap to Lock Panel</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 3-COLUMN INDIVIDUAL DEVICE CONTROLLERS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- ========================================== -->
+<!-- CARD 1: Bedroom Tube Light (Relay D21 / Wall D12) -->
+<!-- ========================================== -->
+<div class="relative flex flex-col justify-between rounded-3xl theme-card p-6 border shadow-xl overflow-hidden transition-all duration-300" id="card-dev-1">
+<!-- Amber Glow Layer -->
+<div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-amber-500/20 blur-3xl pointer-events-none transition-opacity duration-500 opacity-100" id="glow-dev-1"></div>
+<div class="flex flex-col gap-4 relative z-10">
+<!-- Card Header & Pins -->
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-lg theme-subcard text-[11px] font-mono theme-text-muted border font-semibold">
+  Relay: D21 • Wall: D12
+</span>
+<span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold text-[10px] tracking-wider uppercase" id="badge-ch-1">
+  CH 01
+</span>
+</div>
+<!-- Device Title & OVERSIZED Tactile Toggle Button -->
+<div class="flex items-center justify-between gap-3 pt-1">
+<div>
+<h3 class="text-xl font-bold theme-text-strong tracking-tight" id="title-dev-1">
+  Bedroom Tube Light
+</h3>
+<p class="text-xs theme-text-muted mt-0.5" id="sub-dev-1">
+  Primary Ceiling Luminaire
+</p>
+</div>
+<!-- OVERSIZED BUTTON (80px / w-20 h-20) with Warm Amber/Gold Illumination -->
+<button class="relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer shadow-lg" id="btn-toggle-1" title="Toggle Bedroom Tube Light" type="button" style="background-color: rgb(42, 26, 5); border-color: rgb(245, 158, 11); border-width: 2px; box-shadow: rgba(245, 158, 11, 0.55) 0px 0px 32px;">
+<span class="absolute inset-0 rounded-full border-2 border-amber-400 animate-ring-pulse opacity-80" id="ring-dev-1"></span>
+<span class="material-symbols-outlined text-amber-500 text-[36px] transition-transform duration-200" id="icon-dev-1" style="font-variation-settings: 'FILL' 1;">
+  lightbulb
+</span>
+</button>
+</div>
+<!-- Telemetry & Dual-Switch Wall State -->
+<div class="grid grid-cols-2 gap-2 p-2 rounded-2xl theme-subcard border">
+<div class="flex flex-col px-2 py-1">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Load State</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" id="dot-dev-1"></span>
+<span class="text-xs font-bold text-emerald-500 dark:text-emerald-400" id="state-text-dev-1">ON (36W)</span>
+</div>
+</div>
+<button class="flex flex-col px-2 py-1 text-left rounded-xl hover:opacity-80 transition-colors cursor-pointer group" id="wall-toggle-1" title="Click to cycle wall switch trigger state" type="button">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Physical Wall</span>
+<span class="material-symbols-outlined text-[13px] theme-text-muted opacity-0 group-hover:opacity-100 transition-opacity">swap_horiz</span>
+</div>
+<span class="text-xs font-semibold theme-text-strong mt-0.5" id="wall-text-dev-1">STATE 1 (Synced)</span>
+</button>
+</div>
+<!-- ACTIVE SCHEDULE & TIMER PILL (If Active) -->
+<div class="flex flex-col gap-1 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400" id="status-pill-1">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5 font-bold">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span id="active-rule-title-1" class="">Active Schedule</span>
+</div>
+<div class="flex items-center gap-2 text-[11px]">
+<button class="hover:underline font-semibold cursor-pointer" onclick="editScheduleDirect(0)" type="button">Edit</button>
+<span class="">•</span>
+<button class="text-red-500 dark:text-red-400 hover:underline font-semibold cursor-pointer" onclick="clearScheduleDirect(0)" type="button">Delete</button>
+</div>
+</div>
+<span class="text-xs theme-text-strong font-medium" id="active-rule-text-1">Turn ON • Every day • 07:30 PM</span>
+</div>
+<!-- INTEGRATED SEGMENTED SWITCHER: [ ⏱ Quick Timer ] [ 📅 Schedule ] -->
+<div class="flex flex-col gap-2.5 p-3 rounded-2xl theme-subcard border mt-1">
+<div class="grid grid-cols-2 p-1 rounded-xl theme-input border text-xs font-semibold">
+<button class="py-1.5 rounded-lg theme-tab-active font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-timer-btn-1" onclick="switchCardTab(0, 'timer')" type="button">
+<span class="material-symbols-outlined text-[15px]">timer</span> Quick Timer
+</button>
+<button class="py-1.5 rounded-lg theme-text-muted hover:theme-text-strong flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-sched-btn-1" onclick="switchCardTab(0, 'schedule')" type="button">
+<span class="material-symbols-outlined text-[15px]">calendar_month</span> Schedule
+</button>
+</div>
+<!-- VIEW 1: Quick Timer Form -->
+<div class="flex flex-col gap-2" id="card-timer-view-1">
+<div class="flex items-center justify-between text-[11px] theme-text-muted">
+<span class="">Micro-Controller Timer</span>
+<span class="font-mono text-emerald-500 dark:text-emerald-400 font-semibold">Auto-Off Safe</span>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-duration-1">
+<option value="5">5 min</option>
+<option value="10">10 min</option>
+<option selected="" value="15">15 min</option>
+<option value="30">30 min</option>
+<option value="60">60 min</option>
+</select>
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-action-1">
+<option selected="" value="Turn OFF">Turn OFF</option>
+<option value="Turn ON">Turn ON</option>
+</select>
+<button class="col-span-1 py-1.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-xs font-bold tracking-wide active:scale-95 shadow transition-all cursor-pointer" onclick="armDeviceTimer(0)" type="button">
+  Arm Timer
+</button>
+</div>
+</div>
+<!-- VIEW 2: In-Card Schedule Form (Collapsible/Tabbed) -->
+<div class="hidden flex flex-col gap-2.5" id="card-sched-view-1">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Action</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-action-1">
+<option selected="" value="Turn ON">Turn ON</option>
+<option value="Turn OFF">Turn OFF</option>
+</select>
+</div>
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Time</label>
+<input class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-time-1" type="text" value="07:30 PM">
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Cadence</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-cadence-1">
+<option selected="" value="Every day">Every day</option>
+<option value="Once only">Once only</option>
+<option value="Weekdays">Weekdays</option>
+<option value="Weekends">Weekends</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="w-full py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow active:scale-95 transition-all cursor-pointer" onclick="commitInCardSchedule(0)" type="button">
+  Save Schedule
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- CARD 2: Bedroom Small Light (Relay D19 / Wall D14) -->
+<!-- ========================================== -->
+<div class="relative flex flex-col justify-between rounded-3xl theme-card p-6 border shadow-xl overflow-hidden transition-all duration-300" id="card-dev-2">
+<!-- Ambient Indigo/Blue Glow -->
+<div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-blue-500/15 blur-3xl pointer-events-none transition-opacity duration-500 opacity-0" id="glow-dev-2"></div>
+<div class="flex flex-col gap-4 relative z-10">
+<!-- Card Header & Pins -->
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-lg theme-subcard text-[11px] font-mono theme-text-muted border font-semibold">
+  Relay: D19 • Wall: D14
+</span>
+<span class="px-2.5 py-0.5 rounded-full theme-subcard border theme-text-muted font-bold text-[10px] tracking-wider uppercase" id="badge-ch-2">
+  CH 02
+</span>
+</div>
+<!-- Device Title & OVERSIZED Tactile Toggle Button -->
+<div class="flex items-center justify-between gap-3 pt-1">
+<div>
+<h3 class="text-xl font-bold theme-text-strong tracking-tight" id="title-dev-2">
+  Bedroom Small Light
+</h3>
+<p class="text-xs theme-text-muted mt-0.5" id="sub-dev-2">
+  Bedside Ambient Sconce
+</p>
+</div>
+<!-- OVERSIZED BUTTON (80px / w-20 h-20) -->
+<button class="relative w-20 h-20 rounded-full theme-subcard border-2 flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer shadow-md" id="btn-toggle-2" title="Toggle Bedroom Small Light" type="button" style="box-shadow: none;">
+<span class="absolute inset-0 rounded-full border-2 border-blue-500 animate-ring-pulse hidden" id="ring-dev-2"></span>
+<span class="material-symbols-outlined theme-text-muted text-[36px] transition-transform duration-200" id="icon-dev-2" style="font-variation-settings: 'FILL' 0;">bedtime</span>
+</button>
+</div>
+<!-- Telemetry & Dual-Switch Wall State -->
+<div class="grid grid-cols-2 gap-2 p-2 rounded-2xl theme-subcard border">
+<div class="flex flex-col px-2 py-1">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Load State</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500" id="dot-dev-2"></span>
+<span class="text-xs font-bold theme-text-muted" id="state-text-dev-2">OFF (0W)</span>
+</div>
+</div>
+<button class="flex flex-col px-2 py-1 text-left rounded-xl hover:opacity-80 transition-colors cursor-pointer group" id="wall-toggle-2" title="Click to cycle wall switch trigger state" type="button">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Physical Wall</span>
+<span class="material-symbols-outlined text-[13px] theme-text-muted opacity-0 group-hover:opacity-100 transition-opacity">swap_horiz</span>
+</div>
+<span class="text-xs font-semibold theme-text-muted mt-0.5" id="wall-text-dev-2">STATE 0 (Normal)</span>
+</button>
+</div>
+<!-- ACTIVE SCHEDULE & TIMER PILL (If Active) -->
+<div class="flex flex-col gap-1 p-2.5 rounded-xl theme-subcard theme-text-muted border" id="status-pill-2">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span id="active-rule-title-2" class="">No active schedule</span>
+</div>
+</div>
+<span class="text-xs theme-text-muted" id="active-rule-text-2">Standby • Ready for timer or recurring cron</span>
+</div>
+<!-- INTEGRATED SEGMENTED SWITCHER: [ ⏱ Quick Timer ] [ 📅 Schedule ] -->
+<div class="flex flex-col gap-2.5 p-3 rounded-2xl theme-subcard border mt-1">
+<div class="grid grid-cols-2 p-1 rounded-xl theme-input border text-xs font-semibold">
+<button class="py-1.5 rounded-lg theme-tab-active font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-timer-btn-2" onclick="switchCardTab(1, 'timer')" type="button">
+<span class="material-symbols-outlined text-[15px]">timer</span> Quick Timer
+</button>
+<button class="py-1.5 rounded-lg theme-text-muted hover:theme-text-strong flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-sched-btn-2" onclick="switchCardTab(1, 'schedule')" type="button">
+<span class="material-symbols-outlined text-[15px]">calendar_month</span> Schedule
+</button>
+</div>
+<!-- VIEW 1: Quick Timer Form -->
+<div class="flex flex-col gap-2" id="card-timer-view-2">
+<div class="flex items-center justify-between text-[11px] theme-text-muted">
+<span class="">Micro-Controller Timer</span>
+<span class="font-mono text-blue-500 dark:text-blue-400 font-semibold">Preset Duration</span>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-duration-2">
+<option value="5">5 min</option>
+<option selected="" value="10">10 min</option>
+<option value="15">15 min</option>
+<option value="30">30 min</option>
+<option value="60">60 min</option>
+</select>
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-action-2">
+<option selected="" value="Turn ON">Turn ON</option>
+<option value="Turn OFF">Turn OFF</option>
+</select>
+<button class="col-span-1 py-1.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-xs font-bold tracking-wide active:scale-95 shadow transition-all cursor-pointer" onclick="armDeviceTimer(1)" type="button">
+  Arm Timer
+</button>
+</div>
+</div>
+<!-- VIEW 2: In-Card Schedule Form (Collapsible/Tabbed) -->
+<div class="hidden flex flex-col gap-2.5" id="card-sched-view-2">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Action</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-action-2">
+<option value="Turn ON">Turn ON</option>
+<option selected="" value="Turn OFF">Turn OFF</option>
+</select>
+</div>
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Time</label>
+<input class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-time-2" type="text" value="11:00 PM">
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Cadence</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-cadence-2">
+<option value="Every day">Every day</option>
+<option selected="" value="Weekdays">Weekdays</option>
+<option value="Weekends">Weekends</option>
+<option value="Once only">Once only</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="w-full py-1.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-xs font-bold shadow active:scale-95 transition-all cursor-pointer" onclick="commitInCardSchedule(1)" type="button">
+  Save Schedule
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- CARD 3: Bedroom Fan (Relay D18 / Wall D27) -->
+<!-- ========================================== -->
+<div class="relative flex flex-col justify-between rounded-3xl theme-card p-6 border shadow-xl overflow-hidden transition-all duration-300" id="card-dev-3">
+<!-- Vivid Emerald Aura Layer -->
+<div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none transition-opacity duration-500 opacity-100" id="glow-dev-3"></div>
+<div class="flex flex-col gap-4 relative z-10">
+<!-- Card Header & Pins -->
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-0.5 rounded-lg theme-subcard text-[11px] font-mono theme-text-muted border font-semibold">
+  Relay: D18 • Wall: D27
+</span>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] tracking-wider uppercase" id="badge-ch-3">
+  CH 03
+</span>
+</div>
+<!-- Device Title & OVERSIZED Fan Tactile Toggle Button -->
+<div class="flex items-center justify-between gap-3 pt-1">
+<div>
+<h3 class="text-xl font-bold theme-text-strong tracking-tight" id="title-dev-3">
+  Bedroom Fan
+</h3>
+<p class="text-xs theme-text-muted mt-0.5" id="sub-dev-3">
+  Ceiling Inverter Motor • Speed 3
+</p>
+</div>
+<!-- OVERSIZED BUTTON (80px / w-20 h-20) with Emerald Ring & Spinning Blades -->
+<button class="relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer shadow-lg" id="fan-toggle-btn" title="Toggle Bedroom Fan" type="button" style="background-color: rgb(6, 78, 59); border-color: rgb(16, 185, 129); border-width: 2px; box-shadow: rgba(16, 185, 129, 0.55) 0px 0px 32px;">
+<span class="absolute inset-0 rounded-full border-2 border-emerald-400 animate-ring-pulse opacity-80" id="fan-pulse-ring"></span>
+<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-[38px] fan-spin" id="fan-icon">
+  mode_fan
+</span>
+</button>
+</div>
+<!-- Telemetry & Dual-Switch Wall State -->
+<div class="grid grid-cols-2 gap-2 p-2 rounded-2xl theme-subcard border">
+<div class="flex flex-col px-2 py-1">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Load State</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" id="dot-dev-3"></span>
+<span class="text-xs font-bold text-emerald-500 dark:text-emerald-400" id="state-text-dev-3">ON (52W)</span>
+</div>
+</div>
+<button class="flex flex-col px-2 py-1 text-left rounded-xl hover:opacity-80 transition-colors cursor-pointer group" id="wall-toggle-3" title="Click to cycle wall switch trigger state" type="button">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold tracking-wider theme-text-muted">Physical Wall</span>
+<span class="material-symbols-outlined text-[13px] theme-text-muted opacity-0 group-hover:opacity-100 transition-opacity">swap_horiz</span>
+</div>
+<span class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 mt-0.5" id="wall-text-dev-3">STATE 1 (Synced)</span>
+</button>
+</div>
+<!-- ACTIVE TIMER COUNTDOWN PILL -->
+<div class="flex flex-col gap-1 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400" id="status-pill-3">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5 font-bold">
+<span class="material-symbols-outlined text-[16px] animate-pulse">hourglass_top</span>
+<span id="active-rule-title-3" class="">Timer Countdown Active</span>
+</div>
+<button class="text-red-500 dark:text-red-400 hover:underline text-[11px] font-bold uppercase tracking-wider cursor-pointer" onclick="cancelDeviceTimer(2)" type="button">Cancel</button>
+</div>
+<span class="text-xs theme-text-strong font-mono font-bold" id="active-rule-text-3">Turning OFF in 07:28 min</span>
+</div>
+<!-- INTEGRATED SEGMENTED SWITCHER: [ ⏱ Quick Timer ] [ 📅 Schedule ] -->
+<div class="flex flex-col gap-2.5 p-3 rounded-2xl theme-subcard border mt-1">
+<div class="grid grid-cols-2 p-1 rounded-xl theme-input border text-xs font-semibold">
+<button class="py-1.5 rounded-lg theme-tab-active font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-timer-btn-3" onclick="switchCardTab(2, 'timer')" type="button">
+<span class="material-symbols-outlined text-[15px]">timer</span> Quick Timer
+</button>
+<button class="py-1.5 rounded-lg theme-text-muted hover:theme-text-strong flex items-center justify-center gap-1.5 transition-all cursor-pointer" id="tab-sched-btn-3" onclick="switchCardTab(2, 'schedule')" type="button">
+<span class="material-symbols-outlined text-[15px]">calendar_month</span> Schedule
+</button>
+</div>
+<!-- VIEW 1: Quick Timer Form -->
+<div class="flex flex-col gap-2" id="card-timer-view-3">
+<div class="flex items-center justify-between text-[11px] theme-text-muted">
+<span class="">Micro-Controller Timer</span>
+<span class="font-mono text-emerald-500 dark:text-emerald-400 font-semibold">Active Cycle</span>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-duration-3">
+<option value="5">5 min</option>
+<option value="10">10 min</option>
+<option selected="" value="15">15 min</option>
+<option value="30">30 min</option>
+<option value="60">60 min</option>
+</select>
+<select class="col-span-1 px-2 py-1.5 rounded-xl theme-input text-xs font-medium border" id="timer-action-3">
+<option selected="" value="Turn OFF">Turn OFF</option>
+<option value="Turn ON">Turn ON</option>
+</select>
+<button class="col-span-1 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold tracking-wide active:scale-95 shadow transition-all cursor-pointer" onclick="armDeviceTimer(2)" type="button">
+  Arm Timer
+</button>
+</div>
+</div>
+<!-- VIEW 2: In-Card Schedule Form (Collapsible/Tabbed) -->
+<div class="hidden flex flex-col gap-2.5" id="card-sched-view-3">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Action</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-action-3">
+<option selected="" value="Turn ON">Turn ON</option>
+<option value="Turn OFF">Turn OFF</option>
+</select>
+</div>
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Time</label>
+<input class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-time-3" type="text" value="06:00 AM">
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] uppercase font-bold theme-text-muted">Cadence</label>
+<select class="w-full mt-0.5 px-2 py-1 rounded-xl theme-input text-xs border" id="csched-cadence-3">
+<option selected="" value="Every day">Every day</option>
+<option value="Weekdays">Weekdays</option>
+<option value="Weekends">Weekends</option>
+<option value="Once only">Once only</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="w-full py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow active:scale-95 transition-all cursor-pointer" onclick="commitInCardSchedule(2)" type="button">
+  Save Schedule
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ESP32 CONTROLLER TELEMETRY & HARDWARE DETAILS BAR -->
+<div class="rounded-2xl theme-bar p-4.5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg border transition-colors duration-300">
+<div class="flex flex-wrap items-center gap-3 text-xs theme-text-muted">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-[20px]">memory</span>
+<span class="theme-text-strong font-bold">ESP32-WROOM-32</span>
+</div>
+<span class="hidden sm:inline opacity-40">•</span>
+<div class="flex items-center gap-1.5">
+<span class="">Dual-Switch Interlock:</span>
+<span class="text-emerald-500 dark:text-emerald-400 font-bold" id="footer-sync-mode">Active (Hardware Synced)</span>
+</div>
+<span class="hidden sm:inline opacity-40">•</span>
+<div class="font-mono">GPIOs: <strong class="theme-text-strong">D21, D19, D18</strong> OK</div>
+</div>
+<div class="flex flex-wrap items-center gap-4 text-xs font-mono theme-text-muted">
+<div class="">RSSI: <span class="theme-text-strong" id="telemetry-rssi">-52 dBm</span></div>
+<div class="">IP: <span class="theme-text-strong">192.168.1.142</span></div>
+<div class="">RTT: <span class="text-emerald-500 dark:text-emerald-400 font-bold" id="telemetry-rtt">16ms</span></div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="text-[10px] uppercase font-bold text-emerald-500 dark:text-emerald-400">Ready</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none" id="toast-container"></div>
+<!-- APPLIANCE & HARDWARE SETTINGS MODAL -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200" id="settings-modal">
+<div class="theme-card border rounded-3xl w-full max-w-lg p-6 shadow-2xl flex flex-col gap-4 mx-4 transform scale-95 transition-transform duration-200" id="settings-modal-panel">
+<div class="flex items-center justify-between border-b pb-3" style="border-color: rgba(255,255,255,0.08);">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-primary/20 text-primary dark:text-blue-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</div>
+<h3 class="text-lg font-bold theme-text-strong">Appliance &amp; Channel NVRAM</h3>
+</div>
+<button class="w-8 h-8 rounded-xl theme-subcard flex items-center justify-center theme-text-muted hover:theme-text-strong transition-colors cursor-pointer" id="btn-close-modal" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<p class="text-xs theme-text-muted">Modify channel designations saved into the ESP32 internal non-volatile EEPROM memory.</p>
+<div class="flex flex-col gap-3.5 max-h-[60vh] overflow-y-auto pr-1">
+<!-- CH 1 Settings -->
+<div class="p-3.5 rounded-2xl theme-subcard border flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] text-amber-500 font-bold uppercase tracking-wider">Channel 01 (Pin D21)</span>
+<span class="text-[10px] theme-text-muted uppercase">Tube Luminaire</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Name</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-name-0" type="text" value="Bedroom Tube Light">
+</div>
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Subtext</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-sub-0" type="text" value="Primary Ceiling Luminaire">
+</div>
+</div>
+</div>
+<!-- CH 2 Settings -->
+<div class="p-3.5 rounded-2xl theme-subcard border flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider">Channel 02 (Pin D19)</span>
+<span class="text-[10px] theme-text-muted uppercase">Sconce Light</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Name</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-name-1" type="text" value="Bedroom Small Light">
+</div>
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Subtext</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-sub-1" type="text" value="Bedside Ambient Sconce">
+</div>
+</div>
+</div>
+<!-- CH 3 Settings -->
+<div class="p-3.5 rounded-2xl theme-subcard border flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] text-emerald-500 dark:text-emerald-400 font-bold uppercase tracking-wider">Channel 03 (Pin D18)</span>
+<span class="text-[10px] theme-text-muted uppercase">Ceiling Inverter</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Name</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-name-2" type="text" value="Bedroom Fan">
+</div>
+<div>
+<label class="text-[10px] theme-text-muted uppercase font-semibold">Subtext</label>
+<input class="w-full px-2.5 py-1.5 rounded-xl theme-input text-xs border" id="input-sub-2" type="text" value="Ceiling Inverter Motor • Speed 3">
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-2.5 pt-3 border-t" style="border-color: rgba(255,255,255,0.08);">
+<button class="px-4 py-2 rounded-xl theme-subcard theme-text-muted hover:theme-text-strong text-xs font-semibold cursor-pointer" id="btn-cancel-settings" type="button">Cancel</button>
+<button class="px-5 py-2 rounded-xl bg-primary hover:bg-blue-600 text-white text-xs font-bold tracking-wide shadow-md active:scale-95 transition-all cursor-pointer" id="btn-save-settings" type="button">Save NVRAM</button>
+</div>
+</div>
+</div>
+<!-- SCRIPTS: FULL INTERACTIVE STATE CONTROLLER -->
+<!-- FIREBASE REALTIME DATABASE SDK & INITIALIZATION -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD8quKYAx08zmCIqt3ABk3wBrI2OtjgXbc",
+    authDomain: "home-automation-45d88.firebaseapp.com",
+    databaseURL: "https://home-automation-45d88-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "home-automation-45d88",
+    storageBucket: "home-automation-45d88.firebasestorage.app",
+    messagingSenderId: "321974545483",
+    appId: "1:321974545483:web:0d0c18b0e6d2999ecd71ce",
+    measurementId: "G-717ZY4Y3T0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.fbDb = db;
+  window.fbRef = ref;
+  window.fbSet = set;
+  window.fbUpdate = update;
+  window.fbOnValue = onValue;
+</script>
+<script src="app.js"></script>
+
+
+
+
+
+
+</body></html>
