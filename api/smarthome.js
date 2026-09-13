@@ -7,7 +7,7 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://home-automation-45d88-default-rtdb.asia-southeast1.firebasedatabase.app" // Your exact Database URL
+    databaseURL: "https://home-automation-15835-default-rtdb.asia-southeast1.firebasedatabase.app" // Your exact Database URL
   });
 }
 
